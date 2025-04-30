@@ -1,0 +1,36 @@
+# Ignore build output
+/build/
+*.elf
+*.bin
+*.map
+
+# Ignore IDF Python environment
+python_env/
+*.pyc
+__pycache__/
+
+# Ignore logs and debugging files
+*.log
+*.trace
+*.pcap
+
+# Ignore VS Code settings
+.vscode/
+
+# Ignore NVS partition binary files
+*.nvs
+*.nvs_key
+
+# Ignore generated files
+sdkconfig
+sdkconfig.old
+partition_table.csv
+partition_table.bin
+
+# Ignore temporary files
+*.swp
+*.swo
+*.tmp
+
+# Ignore macOS system files
+.DS_Store

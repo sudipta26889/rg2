@@ -1,0 +1,87 @@
+dependencies:
+  espressif/bme280:
+    component_hash: 873d97d0bd30004f45d1653f078a4bafe39c1767e57d4bae0f0a13bc3a4d5e3d
+    dependencies:
+    - name: espressif/cmake_utilities
+      registry_url: https://components.espressif.com
+      require: private
+      version: 0.*
+    - name: espressif/i2c_bus
+      registry_url: https://components.espressif.com
+      require: public
+      version: '*'
+    - name: idf
+      require: private
+      version: '>=4.4'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.1.1
+  espressif/cmake_utilities:
+    component_hash: 351350613ceafba240b761b4ea991e0f231ac7a9f59a9ee901f751bddc0bb18f
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.1'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 0.5.3
+  espressif/i2c_bus:
+    component_hash: e3dddc78baa172f4768f3973fbecbd6c6c1f2cb23cc6a36cf3132758be092482
+    dependencies:
+    - name: espressif/cmake_utilities
+      registry_url: https://components.espressif.com
+      require: private
+      version: 0.*
+    - name: idf
+      require: private
+      version: '>=4.0'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 1.4.0
+  espressif/qrcode:
+    component_hash: 3b493771bc5d6ad30cbf87c25bf784aada8a08c941504355b55d6b75518ed7bc
+    dependencies: []
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.1.0~2
+  idf:
+    source:
+      type: idf
+    version: 5.4.1
+  johboh/homeassistantentities:
+    component_hash: b6571e095b02f0d4a2aa9905d51098f29b659c6808b6b4e74b9b5dbd80c2896f
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4'
+    - name: johboh/nlohmann-json
+      registry_url: https://components.espressif.com
+      require: private
+      version: '>=3.11.3'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 8.0.6
+  johboh/nlohmann-json:
+    component_hash: 2a97e10124d755da820b0381e36a9a6504574328f262964ccea3f8b2f228fc66
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 3.12.0
+direct_dependencies:
+- espressif/bme280
+- espressif/qrcode
+- idf
+- johboh/homeassistantentities
+- johboh/nlohmann-json
+manifest_hash: 9710d75efde3f1d7f1cfe55291a3c25fba370ea539fff675255f5c500b4543f8
+target: esp32c6
+version: 2.0.0
