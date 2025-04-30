@@ -27,6 +27,26 @@ dependencies:
       registry_url: https://components.espressif.com
       type: service
     version: 0.5.3
+  espressif/esp-zboss-lib:
+    component_hash: 321883d142421f65009972408287441794250057668a11abbdfd8bec77c3309a
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.6.4
+  espressif/esp-zigbee-lib:
+    component_hash: 4b023e171bd89d9f6ee2bd9fa63e569c9cfc7f6885d849b566b88cbfcbd37176
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.6.4
   espressif/i2c_bus:
     component_hash: e3dddc78baa172f4768f3973fbecbd6c6c1f2cb23cc6a36cf3132758be092482
     dependencies:
@@ -78,10 +98,12 @@ dependencies:
     version: 3.12.0
 direct_dependencies:
 - espressif/bme280
+- espressif/esp-zboss-lib
+- espressif/esp-zigbee-lib
 - espressif/qrcode
 - idf
 - johboh/homeassistantentities
 - johboh/nlohmann-json
-manifest_hash: 9710d75efde3f1d7f1cfe55291a3c25fba370ea539fff675255f5c500b4543f8
+manifest_hash: 3231c55ec54319aaacdaf6c05df45ad37b18811bc472854874dcf2d19019fa67
 target: esp32c6
 version: 2.0.0

@@ -22,7 +22,6 @@ __pycache__/
 *.nvs_key
 
 # Ignore generated files
-sdkconfig
 sdkconfig.old
 partition_table.csv
 partition_table.bin
@@ -34,3 +33,5 @@ partition_table.bin
 
 # Ignore macOS system files
 .DS_Store
+
+managed_components/*
