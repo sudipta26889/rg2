@@ -20,3 +20,4 @@ dependencies:
   johboh/homeassistantentities: ^8.0.6
   espressif/esp-zigbee-lib: ^1.6.4
   espressif/esp-zboss-lib: ^1.6.4
+  jackhuang021/esp32-wifi-manager: ^0.0.3
