@@ -1,8 +1,10 @@
 #include "esp_zigbee_core.h"
 #include "esp_log.h"
 #include "esp_check.h"
+#include "constants.h"
 
-static const char *ZB_TAG = "RoomGuardianV2::Zigbee";
+static const std::string ZTEMPTAG = std::string(DEVICE_NAME) + "-" + DEVICE_VERSION + "::Zigbee";
+static const char *ZB_TAG = ZTEMPTAG.c_str();
 
 /* Zigbee configuration */
 #define INSTALLCODE_POLICY_ENABLE       false   /* enable the install code policy for security */
@@ -14,7 +16,6 @@ static const char *ZB_TAG = "RoomGuardianV2::Zigbee";
 /* Attribute values in ZCL string format
  * The string should be started with the length of its own.
  */
-#define MANUFACTURER_NAME               "\x09""SudiptaDhara"
 #define MODEL_IDENTIFIER                "\x07".CONFIG_IDF_TARGET
 
 #define ESP_ZB_ZED_CONFIG()                                         \

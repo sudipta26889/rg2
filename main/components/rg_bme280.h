@@ -1,13 +1,18 @@
 #include "bme280.h"
+#include "constants.h"
 
-#define I2C_MASTER_SCL_IO           GPIO_NUM_5
-#define I2C_MASTER_SDA_IO           GPIO_NUM_4
-#define I2C_MASTER_NUM              I2C_NUM_0
-#define I2C_MASTER_FREQ_HZ          100000
+#define I2C_MASTER_SCL_IO GPIO_NUM_5       // GPIO number for I2C SCL
+#define I2C_MASTER_SDA_IO GPIO_NUM_4       // GPIO number for I2C SDA
+#define I2C_MASTER_NUM I2C_NUM_0           // I2C port number
+#define I2C_MASTER_FREQ_HZ 100000          // I2C clock frequency
+#define I2C_MASTER_TX_BUF_DISABLE 0
+#define I2C_MASTER_RX_BUF_DISABLE 0
 
 static i2c_bus_handle_t i2c_bus = NULL;
 static bme280_handle_t bme280 = NULL;
-static const char *RG_BME280_TAG = "RoomGuardianV2::BME280";
+
+static const std::string BTEMPTAG = std::string(DEVICE_NAME) + "-" + DEVICE_VERSION + "::BME280";
+static const char *RG_BME280_TAG = BTEMPTAG.c_str();
 
 // Struct to hold sensor data
 typedef struct {
