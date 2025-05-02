@@ -21,7 +21,7 @@ void sensor_read_task(void *pvParameters) {
         shared_data.temperature = bme280_sensor_data.temperature;
         shared_data.humidity = bme280_sensor_data.humidity;
         shared_data.pressure = bme280_sensor_data.pressure;
-
+        zigbee_update_sensor_values(shared_data.temperature, shared_data.humidity);
         ESP_LOGI(MAIN_TAG, "Temperature: %.2f°C, Humidity: %.2f%%, Pressure: %.2f hPa IP: %s", 
             bme280_sensor_data.temperature, bme280_sensor_data.humidity, bme280_sensor_data.pressure, ip_address);
         vTaskDelay(pdMS_TO_TICKS(5000));
@@ -50,6 +50,7 @@ extern "C" void app_main(void) {
     shared_data.temperature = bme280_sensor_data.temperature;
     shared_data.humidity = bme280_sensor_data.humidity;
     shared_data.pressure = bme280_sensor_data.pressure;
+    zigbee_update_sensor_values(shared_data.temperature, shared_data.humidity);
 
 
     // Start the sensor read task
