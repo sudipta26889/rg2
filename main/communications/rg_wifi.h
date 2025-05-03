@@ -2,6 +2,7 @@
 #include "nvs.h"
 #include "nvs_flash.h"
 #include "constants.h"
+#include "services/shared_data/shared_data.h"
 #include "services/rg_http_server.h"
 
 // Define the Wi-Fi manager NVS namespace
@@ -10,16 +11,13 @@ static const char *wifi_manager_nvs_namespace = "espwifimgr";
 static const std::string WTEMPTAG = std::string(DEVICE_NAME) + "-" + DEVICE_VERSION + "::Wifi";
 static const char *WIFI_TAG = WTEMPTAG.c_str();
 
-static char ip_address[16] = "0.0.0.0";
-
 void cb_connection_ok(void *pvParameter) {
     ip_event_got_ip_t *param = (ip_event_got_ip_t *)pvParameter;
 
     // Transform IP to human-readable string
-    esp_ip4addr_ntoa(&param->ip_info.ip, ip_address, sizeof(ip_address));
+    esp_ip4addr_ntoa(&param->ip_info.ip, shared_data.ip_address, sizeof(shared_data.ip_address));
 
-    ESP_LOGI(WIFI_TAG, "Connected to Wi-Fi. IP Address: %s", ip_address);
-    shared_data.ip_address = ip_address;
+    ESP_LOGI(WIFI_TAG, "Connected to Wi-Fi. IP Address: %s", shared_data.ip_address);
     
     // Attach RG endpoint to HTTP server
     http_app_set_handler_hook(HTTP_GET, &my_get_handler);

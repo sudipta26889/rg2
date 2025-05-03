@@ -1,3 +1,4 @@
+#pragma once
 #include "bme280.h"
 #include "constants.h"
 
@@ -22,7 +23,7 @@ typedef struct {
 } rg_bme280_data_t;
 
 // Function to initialize the I2C bus and BME280 sensor
-static esp_err_t bme280_init(void)
+esp_err_t bme280_init(void)
 {
     ESP_LOGI(RG_BME280_TAG, "Initializing I2C bus...");
 
@@ -32,10 +33,12 @@ static esp_err_t bme280_init(void)
         .sda_io_num = I2C_MASTER_SDA_IO,
         .scl_io_num = I2C_MASTER_SCL_IO,
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master{
+            .clk_speed = I2C_MASTER_FREQ_HZ,
+        },
+        .clk_flags = 0,
     };
-
-    conf.master.clk_speed = I2C_MASTER_FREQ_HZ; 
 
     // Create the I2C bus
     i2c_bus = i2c_bus_create(I2C_MASTER_NUM, &conf);
@@ -63,24 +66,28 @@ static esp_err_t bme280_init(void)
     return ESP_OK;
 }
 
-// Function to deinitialize the BME280 sensor and I2C bus
-static void bme280_deinit(void)
-{
-    if (bme280) {
-        bme280_delete(&bme280);
-        bme280 = NULL;
-    }
-    if (i2c_bus) {
-        i2c_bus_delete(&i2c_bus);
-        i2c_bus = NULL;
-    }
-    ESP_LOGI(RG_BME280_TAG, "BME280 and I2C bus deinitialized.");
-}
+// // Function to deinitialize the BME280 sensor and I2C bus
+// static void bme280_deinit(void)
+// {
+//     if (bme280) {
+//         bme280_delete(&bme280);
+//         bme280 = NULL;
+//     }
+//     if (i2c_bus) {
+//         i2c_bus_delete(&i2c_bus);
+//         i2c_bus = NULL;
+//     }
+//     ESP_LOGI(RG_BME280_TAG, "BME280 and I2C bus deinitialized.");
+// }
 
 // Function to read sensor data
-static rg_bme280_data_t bme280_read_data(void)
+rg_bme280_data_t bme280_read_data(void)
 {
-    rg_bme280_data_t data = {0};
+    rg_bme280_data_t data = {
+        .temperature = 0.0f,
+        .humidity = 0.0f,
+        .pressure = 0.0f
+    };
 
     if (bme280_read_temperature(bme280, &data.temperature) != ESP_OK) {
         ESP_LOGE(RG_BME280_TAG, "Failed to read temperature.");

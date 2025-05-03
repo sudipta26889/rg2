@@ -2,19 +2,10 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include "constants.h"
-
-// Struct to hold sensor data
-typedef struct {
-    float temperature;
-    float humidity;
-    float pressure;
-    const char* ip_address;
-} data_for_html_server_t;
+#include "services/shared_data/shared_data.h"
 
 static const std::string HTEMPTAG = std::string(DEVICE_NAME) + "-" + DEVICE_VERSION + "::HttpServer";
 static const char *HTTP_TAG = HTEMPTAG.c_str();
-
-static data_for_html_server_t shared_data; // Shared data instance
 
 static esp_err_t my_get_handler(httpd_req_t *req){
 

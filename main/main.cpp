@@ -3,15 +3,13 @@
 #include "wifi_manager.h"
 #include "communications/rg_zigbee.h"
 #include "communications/rg_wifi.h"
-#include "components/rg_bme280.h"
+#include "sensor_modules/rg_bme280.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "constants.h"
+#include "services/shared_data/shared_data.h"
 
-
-static const std::string MTEMPTAG = std::string(DEVICE_NAME) + "-" + DEVICE_VERSION + "::Main";
-static const char *MAIN_TAG = MTEMPTAG.c_str();
-
+static const char *MAIN_TAG = (std::string(DEVICE_NAME) + "-" + DEVICE_VERSION + "::Main").c_str();
 
 void sensor_read_task(void *pvParameters) {
     while (1) {
@@ -23,7 +21,7 @@ void sensor_read_task(void *pvParameters) {
         shared_data.pressure = bme280_sensor_data.pressure;
         zigbee_update_sensor_values(shared_data.temperature, shared_data.humidity);
         ESP_LOGI(MAIN_TAG, "Temperature: %.2f°C, Humidity: %.2f%%, Pressure: %.2f hPa IP: %s", 
-            bme280_sensor_data.temperature, bme280_sensor_data.humidity, bme280_sensor_data.pressure, ip_address);
+            bme280_sensor_data.temperature, bme280_sensor_data.humidity, bme280_sensor_data.pressure, shared_data.ip_address);
         vTaskDelay(pdMS_TO_TICKS(5000));
     }
 }

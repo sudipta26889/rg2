@@ -73,14 +73,10 @@ dependencies:
       type: idf
     version: 5.4.1
   jackhuang021/esp32-wifi-manager:
-    component_hash: bc92759b8f4a0372ace80eae7310e9eb4b8c52102c554915dc8f6bfd078858b4
-    dependencies:
-    - name: idf
-      require: private
-      version: '>=4.2'
+    dependencies: []
     source:
-      registry_url: https://components.espressif.com/
-      type: service
+      path: /Users/sudipta/Workspace/Startup/RoomGuardian/RoomGuardianV2/components/jackhuang021__esp32-wifi-manager
+      type: local
     version: 0.0.3
   johboh/homeassistantentities:
     component_hash: b6571e095b02f0d4a2aa9905d51098f29b659c6808b6b4e74b9b5dbd80c2896f
@@ -115,6 +111,6 @@ direct_dependencies:
 - jackhuang021/esp32-wifi-manager
 - johboh/homeassistantentities
 - johboh/nlohmann-json
-manifest_hash: d59a068efd0e6d3476b37cbaa621ad97d8cea4080e2a84570a9bb2fb74fb977b
+manifest_hash: 7cbc0be3282fcfdd6817370c86e887efeea7a03281bef37a48e91c952a848d69
 target: esp32c6
 version: 2.0.0
