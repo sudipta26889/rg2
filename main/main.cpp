@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include "esp_wifi.h"
 #include "wifi_manager.h"
-#include "communications/rg_zigbee.h"
-#include "communications/rg_wifi.h"
+#include "communications/zigbee/rg_zigbee.h"
+#include "communications/wifi/rg_wifi.h"
 #include "sensor_modules/rg_bme280.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

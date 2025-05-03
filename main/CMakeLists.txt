@@ -1,14 +1,11 @@
 idf_component_register(
     SRCS 
         "main.cpp" 
-        "communications/rg_zigbee.cpp"
+        "communications/zigbee/rg_zigbee.cpp"
         "communications/matter/rg_matter.cpp"
+        "communications/openthread/rg_openthread.cpp"
     INCLUDE_DIRS 
         "." 
-        "sensor_modules"
-        "communications"
-        "services/shared_data"
-        "communications/matter"
     REQUIRES 
-        esp_matter  # Only this line needed
+        esp_matter
 )
