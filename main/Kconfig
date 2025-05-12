@@ -1,0 +1,18 @@
+# main/Kconfig
+menu "RoomGuardian V2 Application Configuration"
+
+    config BME280_I2C_SDA_GPIO
+        int "BME280 I2C SDA GPIO number"
+        range 0 48
+        default 4
+        help
+            GPIO number for the I2C SDA line used by BME280 sensor.
+
+    config BME280_I2C_SCL_GPIO
+        int "BME280 I2C SCL GPIO number"
+        range 0 48
+        default 5
+        help
+            GPIO number for the I2C SCL line used by BME280 sensor.
+
+endmenu
