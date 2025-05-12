@@ -1,0 +1,12 @@
+key,type,encoding,value
+chip-factory,namespace,,
+discriminator,data,u32,482
+iteration-count,data,u32,10000
+salt,data,string,untMtudAcqZ4QL2dPMkCnzWxBrARkfzKP02nDPxpe1w=
+vendor-id,data,u32,1
+vendor-name,data,string,Sudipta Dhara
+product-id,data,u32,1
+product-name,data,string,RoomGuardian
+hardware-ver,data,u32,2
+serial-num,data,string,f48031ca38ed941a9c04c4e4d502ebfa
+verifier,data,string,n0R6We5g5/M2+DWsfwPLRegClH/H2c/WfbFHGmm/u1UESO3j2R1ayNftasrJ/HIC+XnA9z3ysmY50Faq2WlEQ1lIllcRF2UwMUT8670lVpPEC2TT1evQyZL8o9jodMJ1Eg==

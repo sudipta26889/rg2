@@ -1,11 +1,7 @@
 idf_component_register(
-    SRCS 
-        "main.cpp" 
-        "communications/zigbee/rg_zigbee.cpp"
-        "communications/matter/rg_matter.cpp"
-        "communications/openthread/rg_openthread.cpp"
-    INCLUDE_DIRS 
-        "." 
-    REQUIRES 
-        esp_matter
+    SRC_DIRS          "."
+    INCLUDE_DIRS      "."
+    PRIV_INCLUDE_DIRS "." "/Users/sudipta/.espressif/esp-matter/examples/common/utils"
 )
+set_property(TARGET ${COMPONENT_LIB} PROPERTY CXX_STANDARD 17)
+target_compile_options(${COMPONENT_LIB} PRIVATE "-DCHIP_HAVE_CONFIG_H")
