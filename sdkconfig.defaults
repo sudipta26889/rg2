@@ -90,3 +90,5 @@ CONFIG_HEAP_TRACE_LEAKS=n            # Disable memory leak tracing for productio
 # Or if you want to specify a custom one (make sure the file exists):
 # CONFIG_PARTITION_TABLE_CUSTOM=y
 # CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_matter.csv"
+
+CONFIG_ENABLE_LWIP_NETWORK_STACK=y
