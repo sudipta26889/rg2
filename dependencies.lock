@@ -44,10 +44,10 @@ dependencies:
   idf:
     source:
       type: idf
-    version: 5.4.1
+    version: 5.2.3
 direct_dependencies:
 - espressif/bme280
 - idf
-manifest_hash: 56655df8035b9ce03ff888e9decae7c9c07a8c31eb7c6c080e638f76e687b00e
+manifest_hash: 13da76ffdc1f7e69736fee60384c3d55a39d8878a415e54b5a4fd9021fc1eef8
 target: esp32c6
 version: 2.0.0
