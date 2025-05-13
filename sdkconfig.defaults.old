@@ -1,0 +1,133 @@
+# sdkconfig.defaults for RoomGuardian V2 with Matter over Wi-Fi and BME280
+
+# --- General ESP-IDF Settings ---
+CONFIG_ESP_TARGET_ESP32C6=y
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+# Set default log level to INFO
+CONFIG_FREERTOS_HZ=1000
+# FreeRTOS tick rate (1000 Hz is good for responsiveness)
+CONFIG_FREERTOS_TASK_STACK_DEPTH_WORDS=4096
+# Adjust if tasks crash due to stack overflow
+
+# --- BME280 I2C Pin Definitions (from main/Kconfig) ---
+# These values will be presented in `idf.py menuconfig` under
+# "RoomGuardian V2 Application Configuration" and can be changed there.
+CONFIG_BME280_I2C_SDA_GPIO=4
+CONFIG_BME280_I2C_SCL_GPIO=5
+
+# --- Wi-Fi Configuration ---
+CONFIG_ESP_WIFI_STA_ENABLE=y
+CONFIG_ESP_WIFI_SSID="BrajOfy_IoT"
+# !!! REPLACE WITH YOUR WIFI SSID !!!
+CONFIG_ESP_WIFI_PASSWORD="9851904515@abc"
+# !!! REPLACE WITH YOUR WIFI PASSWORD !!!
+CONFIG_ESP_WIFI_AUTH_WPA2_PSK=y
+CONFIG_ESP_WIFI_SOFTAP_WPS_ENABLE=n
+CONFIG_ESP_WIFI_AP_WPS_ENABLE=n
+CONFIG_ESP_WIFI_ESP_NOW_CONTROLLER_SUPPORT=n
+CONFIG_ESP_WIFI_BLE_COEX_EN_COEX_MODE=y
+# Enable Wi-Fi and BLE coexistence
+CONFIG_ESP_WIFI_MESH_ENABLE=n
+# Disable Wi-Fi mesh
+
+# --- Matter Configuration ---
+# Note: Many of these Matter options may be "unknown" if Matter components
+# are not included or enabled in your project's dependencies/sdkconfig.
+CONFIG_ENABLE_CHIP_PROJECT=y
+# Choose the primary device type template. HA_TEMPERATURE_SENSOR includes basic, identify, temp sensor clusters.
+CONFIG_ESP_MATTER_DEVICE_TYPE_TEMPERATURE_SENSOR=y
+CONFIG_ESP_MATTER_ENABLE_COMMISSIONING_COMPLETE_HOOK=y
+CONFIG_ESP_MATTER_COMMISSIONER_MODE_AUTO=y
+# Enables a simplified commissioning flow
+CONFIG_ESP_MATTER_COMMISSIONING_TRANSPORT_BLE=y
+# Matter uses BLE for initial commissioning
+CONFIG_ESP_MATTER_COMMISSIONING_TRANSPORT_WIFI=y
+# Enable Wi-Fi as the primary operational transport
+CONFIG_ESP_MATTER_COMMISSIONING_TRANSPORT_THREAD=n
+# Disable Thread for now
+CONFIG_ESP_MATTER_ENABLE_NVS_STORAGE=y
+# Required for storing Matter persistent data
+CONFIG_ESP_MATTER_ENABLE_BLE_ADVERTISING=y
+# Enable BLE advertising for commissioning discovery
+CONFIG_ESP_MATTER_ENABLE_FABRIC_MANAGEMENT=y
+# Required for commissioning and fabric operations
+
+# --- Logging levels for Matter components (fine-tune as needed) ---
+# Note: Some log levels may be "unknown" if Matter components are not included.
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+CONFIG_LOG_LEVEL_CHIP_DETAIL_INFO=y
+# Detailed Matter logging
+CONFIG_LOG_LEVEL_MATTER_INFO=y
+CONFIG_LOG_LEVEL_CHIP_ERROR=y
+# Ensure errors are always logged
+CONFIG_LOG_LEVEL_ESP_MATTER_INFO=y
+CONFIG_LOG_LEVEL_BME280_SENSOR_INFO=y
+# Log level for your BME280 sensor module
+CONFIG_LOG_LEVEL_TAG_APP_MAIN_INFO=y
+# Log level for main application
+
+# --- Component specific configurations (often set automatically by esp-matter, but good to be aware) ---
+# These are common mbedTLS settings for Matter.
+CONFIG_MBEDTLS_INTERNAL_MEM_GRAB_FREE=y
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_VALIDATION=y
+CONFIG_MBEDTLS_CUSTOM_MAX_CONTENT_LEN=16384
+CONFIG_MBEDTLS_SSL_MAX_CONTENT_LEN=16384
+CONFIG_MBEDTLS_SSL_IN_CONTENT_LEN=16384
+CONFIG_MBEDTLS_SSL_OUT_CONTENT_LEN=16384
+CONFIG_MBEDTLS_HAVE_INT64=y
+CONFIG_MBEDTLS_ECP_DP_SECP256R1_ENABLED=y
+CONFIG_MBEDTLS_CHACHA20_AEAD_ENABLED=y
+CONFIG_MBEDTLS_AES_ALT=y
+# Enable hardware acceleration for AES (if available on ESP32-C6)
+CONFIG_MBEDTLS_CCM_ALT=y
+# Enable hardware acceleration for CCM
+CONFIG_MBEDTLS_SHA256_ALT=y
+# Enable hardware acceleration for SHA256
+
+# --- FreeRTOS and System Configurations ---
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+# Optimize for size, common for embedded devices
+CONFIG_SPIRAM_USE=n
+# Set to 'y' if your board has external PSRAM and you want to use it
+CONFIG_PM_ENABLE=y
+# Enable Power Management for better power efficiency
+CONFIG_PM_DFS_INIT_AUTO=y
+# Automatic dynamic frequency scaling (DFS) init
+CONFIG_APP_TRACE_ENABLE=n
+# Disable app tracing unless actively debugging performance
+
+# --- Bluetooth (BLE) Configurations (Essential for Matter Commissioning) ---
+# Note: Some of these Bluetooth options may be "unknown" if Bluetooth is
+# not enabled or configured in your main sdkconfig.
+CONFIG_BT_ENABLED=y
+# Enable Bluetooth
+CONFIG_BT_NIMBLE_ENABLED=y
+# Use NimBLE (preferred for Matter)
+CONFIG_BLUEDROID_ENABLED=n
+# Disable Bluedroid if NimBLE is used
+CONFIG_BT_BLE_CONTROLLER_ENABLED=y
+# Enable BLE Controller
+CONFIG_BT_CONTROLLER_MODE_BLE_ONLY=y
+# BLE only mode for controller
+
+# --- Network Interface (LWIP) Configurations ---
+CONFIG_ESP_NETIF_ENABLED=y
+CONFIG_LWIP_IPV4_ENABLED=y
+CONFIG_LWIP_DHCP_STA_AUTO_IP=y
+# Enable DHCP client for STA mode
+CONFIG_LWIP_ENABLE_DUMP=n
+# Disable LWIP packet dumping for production
+CONFIG_HEAP_TRACE_LEAKS=n
+# Disable memory leak tracing for production (enable for debugging)
+
+# --- Partition Table ---
+# Matter applications generally need larger partitions due to their size.
+# Consider 'factory_app_2mb.csv' or 'single_app_2mb.csv' or larger default partitions.
+# You can select this under 'Partition Table' in `idf.py menuconfig`.
+# Example for a 2MB app partition:
+# CONFIG_PARTITION_TABLE_SINGLE_APP_2MB=y
+# Or if you want to specify a custom one (make sure the file exists):
+# CONFIG_PARTITION_TABLE_CUSTOM=y
+# CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_matter.csv"
+
+CONFIG_ENABLE_LWIP_NETWORK_STACK=y

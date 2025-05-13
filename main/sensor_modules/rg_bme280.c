@@ -1,118 +1,140 @@
 // main/sensor_modules/rg_bme280.c
-#include "rg_bme280.h"
+#include "rg_bme280.h" // Include our custom header first
 #include "esp_log.h"
-#include "freertos/FreeRTOS.h" // Required for vTaskDelayUs in bme280_dev.delay_us
+#include "freertos/FreeRTOS.h" // Required for FreeRTOS types
+#include "freertos/task.h"     // Required for vTaskDelay or similar
+
+// Include necessary ESP-IDF headers for older I2C bus and GPIO
+#include "i2c_bus.h" // Include the header for the older I2C API
+#include "driver/gpio.h"
+
+// Include header from the espressif/bme280 managed component's interface
+#include "bme280.h"
 
 static const char *TAG = "RG_BME280";
 
-esp_err_t rg_bme280_init(rg_bme280_t *rg_bme280, i2c_port_t i2c_port, gpio_num_t sda_pin, gpio_num_t scl_pin, uint8_t bme280_addr)
+// Define I2C_MASTER_FREQ_HZ if not already defined elsewhere (e.g., constants.h)
+#ifndef I2C_MASTER_FREQ_HZ
+#define I2C_MASTER_FREQ_HZ 100000
+#endif
+
+// Initialize the BME280 sensor module using the component's API
+esp_err_t rg_bme280_init(rg_bme280_t *rg_bme280)
 {
     if (!rg_bme280) {
         ESP_LOGE(TAG, "rg_bme280 context pointer is NULL.");
         return ESP_ERR_INVALID_ARG;
     }
 
+    // Initialize handles to NULL
+    rg_bme280->i2c_bus_handle = NULL;
+    rg_bme280->bme280_handle = NULL;
+
     esp_err_t ret;
 
-    // 1. Create I2C master bus
-    i2c_master_bus_config_t i2c_bus_config = {
-        .i2c_port = i2c_port,
+    // Get I2C configuration from Kconfig (defined in your sdkconfig.defaults)
+    // Ensure these are correctly configured in idf.py menuconfig
+    i2c_port_t i2c_port = I2C_NUM_0; // Assuming I2C_NUM_0, verify in menuconfig if needed
+    gpio_num_t sda_pin = (gpio_num_t)CONFIG_BME280_I2C_SDA_GPIO; // From sdkconfig.defaults
+    gpio_num_t scl_pin = (gpio_num_t)CONFIG_BME280_I2C_SCL_GPIO; // From sdkconfig.defaults
+    uint8_t bme280_addr = RG_BME280_I2C_ADDR_PRIM; // Use the address defined in our header
+
+
+    // 1. Configure I2C master parameters using the older i2c_bus API
+    i2c_config_t conf = {
+        .mode = I2C_MODE_MASTER,
         .sda_io_num = sda_pin,
         .scl_io_num = scl_pin,
-        .clk_src = I2C_CLK_SRC_DEFAULT,
-        .glitch_ignore_cnt = 7, // Recommended value for robustness
-        .flags.enable_pullup = true,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master = { // Corrected syntax for initializing the nested 'master' struct
+            .clk_speed = I2C_MASTER_FREQ_HZ, // Use the defined frequency
+        },
+        .clk_flags = 0,
     };
-    ret = i2c_new_master_bus(&i2c_bus_config, &rg_bme280->i2c_bus_handle);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to create I2C master bus: %s", esp_err_to_name(ret));
-        return ret;
+
+    // 2. Create the I2C bus using the older i2c_bus API
+    rg_bme280->i2c_bus_handle = i2c_bus_create(i2c_port, &conf);
+    if (rg_bme280->i2c_bus_handle == NULL) {
+        ESP_LOGE(TAG, "Failed to create I2C bus.");
+        return ESP_FAIL;
     }
-    ESP_LOGI(TAG, "I2C master bus created on port %d, SDA:%d, SCL:%d", i2c_port, sda_pin, scl_pin);
+    ESP_LOGI(TAG, "I2C bus created on port %d, SDA:%d, SCL:%d", i2c_port, sda_pin, scl_pin);
 
-
-    // 2. Add I2C device for BME280 to the bus
-    i2c_device_config_t i2c_dev_config = {
-        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-        .device_address = bme280_addr,
-        .scl_speed_hz = 100000, // 100 KHz, can be increased to 400KHz if needed
-    };
-    ret = i2c_master_bus_add_device(rg_bme280->i2c_bus_handle, &i2c_dev_config, &rg_bme280->i2c_dev_handle);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to add I2C device (BME280 at 0x%02X): %s", bme280_addr, esp_err_to_name(ret));
-        // Cleanup bus if device add fails
-        i2c_del_master_bus(rg_bme280->i2c_bus_handle);
-        return ret;
+    // 3. Create the BME280 sensor handle using the component's API
+    rg_bme280->bme280_handle = bme280_create(rg_bme280->i2c_bus_handle, bme280_addr);
+    if (rg_bme280->bme280_handle == NULL) {
+        ESP_LOGE(TAG, "Failed to create BME280 sensor handle.");
+        // Cleanup I2C bus on failure
+        i2c_bus_delete(&rg_bme280->i2c_bus_handle);
+        rg_bme280->i2c_bus_handle = NULL;
+        return ESP_FAIL;
     }
-    ESP_LOGI(TAG, "BME280 I2C device added to bus.");
+    ESP_LOGI(TAG, "BME280 sensor handle created.");
 
-    // 3. Initialize the BME280 device struct for the component
-    rg_bme280->bme280_dev.dev_id = bme280_addr;
-    rg_bme280->bme280_dev.intf_ptr = rg_bme280->i2c_dev_handle; // Use the I2C device handle
-    rg_bme280->bme280_dev.intf = BME280_I2C_INTF;
-    rg_bme280->bme280_dev.delay_us = vTaskDelayUs; // Use FreeRTOS delay for `delay_us` callback
 
-    // 4. Initialize the BME280 sensor itself
-    ret = bme280_init_sensor(&rg_bme280->bme280_dev);
+    // 4. Initialize the BME280 sensor with default settings using the component's API
+    // Note: bme280_default_init often puts the sensor into a specific mode (e.g., Normal)
+    ret = bme280_default_init(rg_bme280->bme280_handle);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to initialize BME280 sensor (component init): %s", esp_err_to_name(ret));
-        // Cleanup device and bus
-        i2c_master_bus_rm_device(rg_bme280->i2c_dev_handle);
-        i2c_del_master_bus(rg_bme280->i2c_bus_handle);
-        return ret;
+        ESP_LOGE(TAG, "Failed to initialize BME280 with default settings: %s", esp_err_to_name(ret));
+        // Cleanup BME280 handle and I2C bus on failure
+        bme280_delete(&rg_bme280->bme280_handle);
+        rg_bme280->bme280_handle = NULL;
+        i2c_bus_delete(&rg_bme280->i2c_bus_handle);
+        rg_bme280->i2c_bus_handle = NULL;
+        return ESP_FAIL;
     }
-    ESP_LOGI(TAG, "BME280 sensor (component) initialized.");
 
-    // 5. Configure BME280 sensor settings
-    uint8_t settings_sel = BME280_OSR_PRESS_SEL | BME280_OSR_TEMP_SEL | BME280_OSR_HUM_SEL | BME280_FILTER_SEL | BME280_STANDBY_SEL;
-    rg_bme280->bme280_dev.settings.osr_h = BME280_OVERSAMPLING_1X;
-    rg_bme280->bme280_dev.settings.osr_p = BME280_OVERSAMPLING_1X;
-    rg_bme280->bme280_dev.settings.osr_t = BME280_OVERSAMPLING_1X;
-    rg_bme280->bme280_dev.settings.filter = BME280_FILTER_COEFF_OFF;
-    rg_bme280->bme280_dev.settings.standby_time = BME280_STANDBY_TIME_1000_MS; // 1 second standby
+    ESP_LOGI(TAG, "BME280 initialization successful.");
 
-    ret = bme280_set_sensor_settings(settings_sel, &rg_bme280->bme280_dev);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to set BME280 sensor settings: %s", esp_err_to_name(ret));
-        // Cleanup device and bus
-        i2c_master_bus_rm_device(rg_bme280->i2c_dev_handle);
-        i2c_del_master_bus(rg_bme280->i2c_bus_handle);
-        return ret;
-    }
-    ESP_LOGI(TAG, "BME280 sensor settings applied.");
+    // *** Add a delay here to allow the first measurement cycle to complete ***
+    // The default settings likely put it in Normal mode with a 1000ms standby.
+    // Wait slightly longer than the expected measurement period (standby time).
+    vTaskDelay(pdMS_TO_TICKS(1100)); // Wait 1.1 seconds
 
-    // 6. Set sensor mode to normal
-    ret = bme280_set_sensor_mode(BME280_NORMAL_MODE, &rg_bme280->bme280_dev);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to set BME280 sensor mode: %s", esp_err_to_name(ret));
-        // Cleanup device and bus
-        i2c_master_bus_rm_device(rg_bme280->i2c_dev_handle);
-        i2c_del_master_bus(rg_bme280->i2c_bus_handle);
-        return ret;
-    }
-    ESP_LOGI(TAG, "BME280 sensor mode set to normal.");
-
-    ESP_LOGI(TAG, "BME280 sensor initialization complete.");
     return ESP_OK;
 }
 
+// Read compensated temperature, pressure, and humidity from the BME280 sensor
 esp_err_t rg_bme280_read_values(rg_bme280_t *rg_bme280, rg_bme280_values_t *values)
 {
-    if (!rg_bme280 || !values) {
-        ESP_LOGE(TAG, "Invalid arguments: rg_bme280 or values pointer is NULL.");
+    if (!rg_bme280 || !values || !rg_bme280->bme280_handle) {
+        ESP_LOGE(TAG, "Invalid arguments or BME280 handle not initialized.");
         return ESP_ERR_INVALID_ARG;
     }
 
-    bme280_data_t comp_data;
-    esp_err_t ret = bme280_get_comp_data(&comp_data, &rg_bme280->bme280_dev);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to get BME280 sensor data: %s", esp_err_to_name(ret));
-        return ret;
+    esp_err_t ret_temp = ESP_FAIL, ret_press = ESP_FAIL, ret_hum = ESP_FAIL;
+
+    // Use the component's individual read functions
+    ret_temp = bme280_read_temperature(rg_bme280->bme280_handle, &values->temperature);
+    ret_hum = bme280_read_humidity(rg_bme280->bme280_handle, &values->humidity);
+    ret_press = bme280_read_pressure(rg_bme280->bme280_handle, &values->pressure);
+
+    if (ret_temp != ESP_OK || ret_hum != ESP_OK || ret_press != ESP_OK) {
+         ESP_LOGE(TAG, "Failed to read BME280 sensor data.");
+         // You could log which specific read failed here if needed
+         return ESP_FAIL; // Return failure if any read failed
     }
 
-    values->temperature = comp_data.temperature;
-    values->pressure = comp_data.pressure / 100.0f; // Convert Pa to hPa
-    values->humidity = comp_data.humidity;
 
+    // If all reads were successful
     return ESP_OK;
+}
+
+// Deinitializes the BME280 sensor module, freeing allocated resources.
+void rg_bme280_deinit(rg_bme280_t *rg_bme280)
+{
+    if (rg_bme280) {
+        if (rg_bme280->bme280_handle) {
+             bme280_delete(&rg_bme280->bme280_handle);
+             rg_bme280->bme280_handle = NULL;
+        }
+        // The older API i2c_bus_delete also takes a pointer to the handle.
+        if (rg_bme280->i2c_bus_handle) {
+             i2c_bus_delete(&rg_bme280->i2c_bus_handle);
+             rg_bme280->i2c_bus_handle = NULL;
+        }
+        ESP_LOGI(TAG, "BME280 module deinitialized.");
+    }
 }

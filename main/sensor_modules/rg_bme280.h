@@ -1,103 +1,80 @@
+// main/sensor_modules/rg_bme280.h
+#ifndef RG_BME280_H_
+#define RG_BME280_H_
+
 #pragma once
+
+#include "esp_err.h"
+// Include the BME280 component's header - it includes i2c_bus.h
 #include "bme280.h"
-#include "constants.h"
+// Include GPIO driver header for gpio_num_t if needed by init function
+#include "driver/gpio.h"
+// Include i2c_bus.h explicitly for i2c_bus_handle_t definition
+#include "i2c_bus.h"
 
-#define I2C_MASTER_SCL_IO GPIO_NUM_5       // GPIO number for I2C SCL
-#define I2C_MASTER_SDA_IO GPIO_NUM_4       // GPIO number for I2C SDA
-#define I2C_MASTER_NUM I2C_NUM_0           // I2C port number
-#define I2C_MASTER_FREQ_HZ 100000          // I2C clock frequency
-#define I2C_MASTER_TX_BUF_DISABLE 0
-#define I2C_MASTER_RX_BUF_DISABLE 0
 
-static i2c_bus_handle_t i2c_bus = NULL;
-static bme280_handle_t bme280 = NULL;
+// Include Kconfig header to access sensor configuration options
+#include <sdkconfig.h>
 
-static const std::string BTEMPTAG = std::string(DEVICE_NAME) + "-" + DEVICE_VERSION + "::BME280";
-static const char *RG_BME280_TAG = BTEMPTAG.c_str();
 
-// Struct to hold sensor data
+// Structure to hold the I2C bus handle and the BME280 component's handle
 typedef struct {
-    float temperature;
-    float humidity;
-    float pressure;
-} rg_bme280_data_t;
+    i2c_bus_handle_t i2c_bus_handle; // Store the I2C bus handle
+    bme280_handle_t bme280_handle; // Use the component's opaque sensor handle
+} rg_bme280_t;
 
-// Function to initialize the I2C bus and BME280 sensor
-esp_err_t bme280_init(void)
-{
-    ESP_LOGI(RG_BME280_TAG, "Initializing I2C bus...");
+// Structure to hold BME280 sensor readings in desired units
+typedef struct {
+    float temperature; // Temperature in Celsius
+    float pressure;    // Pressure in hPa (hectoPascals)
+    float humidity;    // Humidity in %RH
+} rg_bme280_values_t;
 
-    // Configure I2C parameters
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = I2C_MASTER_SDA_IO,
-        .scl_io_num = I2C_MASTER_SCL_IO,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master{
-            .clk_speed = I2C_MASTER_FREQ_HZ,
-        },
-        .clk_flags = 0,
-    };
 
-    // Create the I2C bus
-    i2c_bus = i2c_bus_create(I2C_MASTER_NUM, &conf);
-    if (i2c_bus == NULL) {
-        ESP_LOGE(RG_BME280_TAG, "Failed to create I2C bus.");
-        return ESP_FAIL;
-    }
+// Use extern "C" to prevent C++ name mangling for these C functions
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    ESP_LOGI(RG_BME280_TAG, "Initializing BME280 sensor...");
+/**
+ * @brief Initializes the BME280 sensor module using the espressif/bme280 component's API.
+ *
+ * Sets up the I2C bus using the older i2c_bus API and initializes the BME280 sensor.
+ * Uses Kconfig for I2C pin configuration.
+ *
+ * @param rg_bme280 Pointer to an allocated rg_bme280_t structure to hold the instance data.
+ * @return ESP_OK on success, error code otherwise.
+ */
+esp_err_t rg_bme280_init(rg_bme280_t *rg_bme280);
 
-    // Create the BME280 sensor handle
-    bme280 = bme280_create(i2c_bus, BME280_I2C_ADDRESS_DEFAULT); // Use 0x77 if needed
-    if (bme280 == NULL) {
-        ESP_LOGE(RG_BME280_TAG, "Failed to initialize BME280.");
-        return ESP_FAIL;
-    }
+/**
+ * @brief Reads compensated temperature, pressure, and humidity from the BME280 sensor.
+ *
+ * Uses the espressif/bme280 component's API to read individual sensor values.
+ *
+ * @param rg_bme280 Pointer to the initialized rg_bme280_t structure containing the sensor handle.
+ * @param values Pointer to an rg_bme280_values_t structure to store the readings.
+ * @return ESP_OK on success, error code otherwise.
+ */
+esp_err_t rg_bme280_read_values(rg_bme280_t *rg_bme280, rg_bme280_values_t *values);
 
-    // Initialize the BME280 sensor with default settings
-    if (bme280_default_init(bme280) != ESP_OK) {
-        ESP_LOGE(RG_BME280_TAG, "Failed to initialize BME280 with default settings.");
-        return ESP_FAIL;
-    }
+/**
+ * @brief Deinitializes the BME280 sensor module, freeing allocated resources.
+ *
+ * Deletes the BME280 sensor handle and the I2C bus handle.
+ *
+ * @param rg_bme280 Pointer to the rg_bme280_t structure to deinitialize.
+ */
+void rg_bme280_deinit(rg_bme280_t *rg_bme280);
 
-    ESP_LOGI(RG_BME280_TAG, "BME280 initialization successful.");
-    return ESP_OK;
-}
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
-// // Function to deinitialize the BME280 sensor and I2C bus
-// static void bme280_deinit(void)
-// {
-//     if (bme280) {
-//         bme280_delete(&bme280);
-//         bme280 = NULL;
-//     }
-//     if (i2c_bus) {
-//         i2c_bus_delete(&i2c_bus);
-//         i2c_bus = NULL;
-//     }
-//     ESP_LOGI(RG_BME280_TAG, "BME280 and I2C bus deinitialized.");
-// }
 
-// Function to read sensor data
-rg_bme280_data_t bme280_read_data(void)
-{
-    rg_bme280_data_t data = {
-        .temperature = 0.0f,
-        .humidity = 0.0f,
-        .pressure = 0.0f
-    };
+// Define BME280 I2C addresses (these are from the bme280 component's common defines)
+#define RG_BME280_I2C_ADDR_PRIM BME280_I2C_ADDRESS_DEFAULT // Use component's default
+#define RG_BME280_I2C_ADDR_SEC  0x77 // Secondary address if needed
 
-    if (bme280_read_temperature(bme280, &data.temperature) != ESP_OK) {
-        ESP_LOGE(RG_BME280_TAG, "Failed to read temperature.");
-    }
-    if (bme280_read_humidity(bme280, &data.humidity) != ESP_OK) {
-        ESP_LOGE(RG_BME280_TAG, "Failed to read humidity.");
-    }
-    if (bme280_read_pressure(bme280, &data.pressure) != ESP_OK) {
-        ESP_LOGE(RG_BME280_TAG, "Failed to read pressure.");
-    }
 
-    return data;
-}
+#endif /* RG_BME280_H_ */
