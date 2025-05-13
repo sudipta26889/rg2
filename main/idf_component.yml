@@ -5,3 +5,4 @@ dependencies:
 
   # Other dependencies - Correct component name with underscore
   espressif/bme280: ^0.1.1
+  espressif/esp_matter: ^1.4.0
