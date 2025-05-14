@@ -1,8 +1,9 @@
 dependencies:
-  # Required IDF version - Make this specific to your exact installed version
-  idf:
-    version: 5.2.3   # <-- Changed to your exact IDF version
-
-  # Other dependencies - Correct component name with underscore
-  espressif/bme280: ^0.1.1
-  espressif/esp_matter: ^1.4.0
+  espressif/cmake_utilities:
+    version: 0.*
+    rules:
+      - if: "idf_version >=5.0"
+      - if: "target in [esp32c6]"
+  
+  espressif/bme280: 
+    version: ^0.1.1

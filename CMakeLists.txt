@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
+
+# Set the path to your esp-matter installation
+# !!! IMPORTANT: Make sure this path is correct for your system !!!
+# set(ESP_MATTER_PATH "/Users/sudipta/esp/v5.2.3/esp-matter")
+
+# Add the esp-matter path to the component search paths
+# This allows idf_component.yml to find components like esp_matter, openthread, etc.
+set(EXTRA_COMPONENT_DIRS ${ESP_MATTER_PATH})
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(rg2)
-
-# C++ Standard setting for the entire project
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF) # Recommended for strict C++ standard adherence
-
-# ... (other project configurations)
-# The project.cmake automatically adds the 'main' component subdirectory.
