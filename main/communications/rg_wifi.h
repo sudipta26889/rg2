@@ -8,7 +8,7 @@
 // Define the Wi-Fi manager NVS namespace
 static const char *wifi_manager_nvs_namespace = "espwifimgr";
 
-static const std::string WTEMPTAG = std::string(DEVICE_NAME) + "-" + DEVICE_VERSION + "::Wifi";
+static const std::string WTEMPTAG = std::string(DEVICE_NAME) + "-" + DEVICE_VERSION + "::WiFi";
 static const char *WIFI_TAG = WTEMPTAG.c_str();
 
 void cb_connection_ok(void *pvParameter) {
