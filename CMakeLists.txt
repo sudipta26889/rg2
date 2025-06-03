@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 3.16)
 # Add the esp-matter path to the component search paths
 # This allows idf_component.yml to find components like esp_matter, openthread, etc.
 set(EXTRA_COMPONENT_DIRS ${ESP_MATTER_PATH})
+list(APPEND EXTRA_COMPONENT_DIRS ${CMAKE_CURRENT_LIST_DIR}/tests)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(rg2)
