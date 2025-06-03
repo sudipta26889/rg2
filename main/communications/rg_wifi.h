@@ -46,11 +46,10 @@ void reset_wifi_provisioning(void) {
         } else {
             ESP_LOGE(WIFI_TAG, "Failed to erase Wi-Fi provisioning data: %s", esp_err_to_name(err));
         }
+        // Commit changes to NVS before closing the handle
+        nvs_commit(handle);
         nvs_close(handle);
     } else {
         ESP_LOGE(WIFI_TAG, "Failed to open NVS: %s", esp_err_to_name(err));
     }
-
-    // Commit changes to NVS
-    nvs_commit(handle);
 }
